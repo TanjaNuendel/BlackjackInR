@@ -27,6 +27,63 @@ deck <- data.frame(cardtype, cardvalue, current_deckfreq, stringsAsFactors = TRU
 # Dealer's game - hardfast rule
 
 # Player strategies (Mushahid)
+players <- list()
+playersDF <- data.frame(cards = vector(), numericValues = vector(), total = vector())
+
+dfPopulate <- function(numPlayers) {
+  for (i in 1:numPlayers) {
+    players[[i]] <- playersDF
+  }
+  return(players)
+}
+
+# win <- function() {
+#   
+# }
+# 
+# gameEnd <- function() {
+#   if (win) {
+#     return(TRUE)
+#   } else {
+#     return(FALSE)
+#   }
+# }
+
+#Updates the data frame for the player, given the player number, card type, and card number
+updateTotal <- function(player_num, card_type, card_val) {
+  typeVec <- append(players[[player_num]][, 1], card_type)
+  valVec <- append(players[[player_num]][, 2], card_val)
+  
+  len <- length(players[[player_num]][, 3])
+  if (len == 0) {
+    totalVec <- append(players[[player_num]][, 3], card_val)
+  } else {
+    total = card_val + players[[player_num]][, 3][len]
+    totalVec <- append(players[[player_num]][, 3], total)
+  }
+
+  players[[player_num]] <- data.frame(cards = typeVec, numericValues = valVec, total = totalVec)
+  return(players)
+}
+
+#Basic way to determine whether to hit or stand
+HitOrStand <- function(player_num) {
+  total <- players[[player_num]][, 3][length(players[[player_num]][, 3])]
+  if (total >= 17) {
+    print("Stand")
+  } else {
+    print("Hit")
+  }
+}
+
+players <- dfPopulate(4)
+
+#Populating player 1
+players <- updateTotal(1, "Ace", 11)
+players <- updateTotal(1, "5", 5)
+players <- updateTotal(1, "King", 10)
+
+players
 
 # Func: drawing without replacement
 # use sample()
