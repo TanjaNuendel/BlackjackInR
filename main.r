@@ -26,17 +26,21 @@ updateDeck <- function(deck, drawn_card) {
   deck$current_deckfreq[which(cardtype == drawn_card)] <- (deck$current_deckfreq[which(cardtype == drawn_card)] - 1)
   #probabilities are updated
   drawn_card_index <- which(cardtype == drawn_card)
-  updateProbs <- function(index){
+  updateProbs <- function(){
     deck$card_probs[index] <- deck$current_deckfreq[index] / sum(deck$current_deckfreq)
   }
   
   # this throws an error: " Error in FUN(X[[i]], ...) : unused argument (arg1 = drawn_card_index)"
-  deck$card_probs <- lapply(deck$card_probs, updateProbs, arg1 = drawn_card_index)
+  deck$card_probs <- lapply(deck$card_probs, 
+                            function(x) deck$card_probs[drawn_card_index] 
+                            <- deck$current_deckfreq[drawn_card_index] / 
+                              sum(deck$current_deckfreq))
 }
 
 # function to draw a card from the current deck
 drawCard <- function(x){
   drawn_card <- sample(deck$cardtype, size = 1, replace = TRUE)
+  print(drawn_card)
   # if card is already out, draw again until there is one
   if (deck$current_deckfreq[which(cardtype == drawn_card)] == 0){
     drawn_card <- sample(deck$cardtype, size = 1, replace = TRUE)
@@ -44,8 +48,8 @@ drawCard <- function(x){
     # make new deck if all cards are empty
     deck <- data.frame(cardtype, cardvalue, current_deckfreq, card_probs, stringsAsFactors = TRUE)
   } else {
-  updateDeck(deck, drawn_card)
-    }
+    updateDeck(deck, drawn_card)
+  }
 }
 
 drawCard()
@@ -93,7 +97,7 @@ HitOrStand <- function(player_num, vec) {
   } else if (total >= 17 && total < 21) {
     printf("Player %d: Stand\n", player_num)
     CheckStatus(player_num, total)
-  } else {a
+  } else {
     printf("Player %d: Hit\n", player_num)
     CheckStatus(player_num, total)
   }
