@@ -6,23 +6,39 @@ library(magrittr)
 library(tidyverse)
 library(forcats)
 
-# Deck simulation (Tanja)
-deck_count <- 5
+# Deck simulation
+deck_count <- 1
+total_cards <- deck_count * 52
 cardtype <- c("Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King")
 cardvalue <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10)
+
 # make a vector of frequencies - in the beginning 4 cards per type and deck
 current_deckfreq <- rep(deck_count*4, 13)
-card_probs <- vector()
-
-# faulty atm - will calculate probability of card at next draw, is updated constantly
-card_probs <- 
-  for (i in cardtype){
-    card_probs[i] <- current_deckfreq / sum(current_deckfreq)
-  }
+# init card probabilities with equal proportions of 1/13
+card_probs <- rep(1/13, total_cards/4)
 
 # make the deck from given data
-deck <- data.frame(cardtype, cardvalue, current_deckfreq, stringsAsFactors = TRUE)
+deck <- data.frame(cardtype, cardvalue, current_deckfreq, card_probs, stringsAsFactors = TRUE)
 
+# keeps deck updated with card type frequencies and probablilities
+updateDeck <- function(deck, card) {
+  # drawn card gets removed from deck
+  current_deckfreq[card] <- (current_deckfreq[card] - 1)
+  #probabilities are updated
+  updateProbs <- function(deck){
+    prob <- current_deckfreq[card] / sum(deck$current_deckfreq)
+  }
+  deck$card_probs <- sapply(deck$card_probs, updateProbs)
+}
+
+# function to draw a card from the current deck
+drawCard <- function(x){
+  drawn_card <- sample(deck$cardtype, size = 1, replace = TRUE)
+  while (deck$current_deckfreq == 0){
+    drawn_card <- sample(deck$cardtype, size = 1, replace = TRUE)
+  }
+  updateDeck(deck, drawn_card)
+}
 
 # Dealer's game - hardfast rule
 
@@ -67,7 +83,7 @@ HitOrStand <- function(player_num, vec) {
   } else if (total >= 17 && total < 21) {
     printf("Player %d: Stand\n", player_num)
     CheckStatus(player_num, total)
-  } else {
+  } else {a
     printf("Player %d: Hit\n", player_num)
     CheckStatus(player_num, total)
   }
@@ -113,6 +129,5 @@ players
 # use sample()
 # handle zero case: if current_deckfreq of a card is already 0, it will stay zero
 
-# shuffling
 
 # counting for winning
