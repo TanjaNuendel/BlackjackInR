@@ -21,24 +21,34 @@ card_probs <- rep(1/13, total_cards/4)
 deck <- data.frame(cardtype, cardvalue, current_deckfreq, card_probs, stringsAsFactors = TRUE)
 
 # keeps deck updated with card type frequencies and probablilities
-updateDeck <- function(deck, card) {
+updateDeck <- function(deck, drawn_card) {
   # drawn card gets removed from deck
-  current_deckfreq[card] <- (current_deckfreq[card] - 1)
+  deck$current_deckfreq[which(cardtype == drawn_card)] <- (deck$current_deckfreq[which(cardtype == drawn_card)] - 1)
   #probabilities are updated
-  updateProbs <- function(deck){
-    prob <- current_deckfreq[card] / sum(deck$current_deckfreq)
+  drawn_card_index <- which(cardtype == drawn_card)
+  updateProbs <- function(index){
+    deck$card_probs[index] <- deck$current_deckfreq[index] / sum(deck$current_deckfreq)
   }
-  deck$card_probs <- sapply(deck$card_probs, updateProbs)
+  
+  # this throws an error: " Error in FUN(X[[i]], ...) : unused argument (arg1 = drawn_card_index)"
+  deck$card_probs <- lapply(deck$card_probs, updateProbs, arg1 = drawn_card_index)
 }
 
 # function to draw a card from the current deck
 drawCard <- function(x){
   drawn_card <- sample(deck$cardtype, size = 1, replace = TRUE)
-  while (deck$current_deckfreq == 0){
+  # if card is already out, draw again until there is one
+  if (deck$current_deckfreq[which(cardtype == drawn_card)] == 0){
     drawn_card <- sample(deck$cardtype, size = 1, replace = TRUE)
-  }
+  } else if(sum(deck$current_deckfreq) == 0) {
+    # make new deck if all cards are empty
+    deck <- data.frame(cardtype, cardvalue, current_deckfreq, card_probs, stringsAsFactors = TRUE)
+  } else {
   updateDeck(deck, drawn_card)
+    }
 }
+
+drawCard()
 
 # Dealer's game - hardfast rule
 
